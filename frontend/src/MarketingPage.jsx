@@ -22,7 +22,7 @@ export default function MarketingPage(props) {
         <LogoCollection />
         <Features />
         <Divider />
-        <Testimonials />
+        {/* <Testimonials /> */}
         <Divider />
         <Highlights />
         <Divider />
