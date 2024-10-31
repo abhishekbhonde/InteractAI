@@ -14,8 +14,8 @@ import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import Sitemark from './SitemarkIcon';
 import ColorModeIconDropdown from '../shared-theme/ColorModeIconDropdown';
 import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
-import Logo from './Logo'
+import Logo from './Logo';
+import Avatar from '@mui/material/Avatar';
 
 const StyledToolbar = styled(Toolbar)(({ theme }) => ({
   display: 'flex',
@@ -35,17 +35,39 @@ const StyledToolbar = styled(Toolbar)(({ theme }) => ({
 
 export default function AppAppBar() {
   const [open, setOpen] = React.useState(false);
+  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+  const [username, setUsername] = React.useState('');
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    // Mock authentication check - replace with your actual auth logic
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('username'); // Assume username is stored after login
+    if (token && user) {
+      setIsAuthenticated(true);
+      setUsername(user);
+    }
+  }, []);
 
   const toggleDrawer = (newOpen) => () => {
     setOpen(newOpen);
   };
-    const navigate = useNavigate()
+
   const handleSigninClick = () => {
     navigate('/login');
   };
-  const handleSignupClick = ()=>{
-    navigate('/signup')
-  }
+
+  const handleSignupClick = () => {
+    navigate('/signup');
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    setIsAuthenticated(false);
+    setUsername('');
+    navigate('/');
+  };
 
   return (
     <AppBar
@@ -61,28 +83,17 @@ export default function AppAppBar() {
       <Container maxWidth="lg">
         <StyledToolbar variant="dense" disableGutters>
           <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', px: 0 }}>
-          <Logo/>
+            <Logo />
             <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-              <Button variant="text" color="info" size="small">
-                Features
-              </Button>
-              <Button variant="text" color="info" size="small">
-                Testimonials
-              </Button>
-              <Button variant="text" color="info" size="small">
-                Highlights
-              </Button>
-              <Button variant="text" color="info" size="small">
-                Pricing
-              </Button>
-              <Button variant="text" color="info" size="small" sx={{ minWidth: 0 }}>
-                FAQ
-              </Button>
-              <Button  variant="text" color="info" size="small" sx={{ minWidth: 0 }}>
-                Blog
-              </Button>
+              <Button variant="text" color="info" size="small">Features</Button>
+              <Button variant="text" color="info" size="small">Testimonials</Button>
+              <Button variant="text" color="info" size="small">Highlights</Button>
+              <Button variant="text" color="info" size="small">Pricing</Button>
+              <Button variant="text" color="info" size="small" sx={{ minWidth: 0 }}>FAQ</Button>
+              <Button variant="text" color="info" size="small" sx={{ minWidth: 0 }}>Blog</Button>
             </Box>
           </Box>
+
           <Box
             sx={{
               display: { xs: 'none', md: 'flex' },
@@ -90,16 +101,29 @@ export default function AppAppBar() {
               alignItems: 'center',
             }}
           >
-            
-            <Button onClick={handleSigninClick} color="primary" variant="text" size="small">
-              Sign in
-            </Button>
-            
-            <Button onClick={handleSignupClick} color="primary" variant="contained" size="small">
-              Sign up
-            </Button>
+            {isAuthenticated ? (
+              <>
+                <IconButton onClick={handleLogout} color="primary">
+                  <Avatar>{username[0].toUpperCase()}</Avatar>
+                </IconButton>
+                <Button onClick={handleLogout} color="primary" variant="text" size="small">
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button onClick={handleSigninClick} color="primary" variant="text" size="small">
+                  Sign in
+                </Button>
+                <Button onClick={handleSignupClick} color="primary" variant="contained" size="small">
+                  Sign up
+                </Button>
+              </>
+            )}
             <ColorModeIconDropdown />
           </Box>
+
+          {/* Mobile Drawer */}
           <Box sx={{ display: { xs: 'flex', md: 'none' }, gap: 1 }}>
             <ColorModeIconDropdown size="medium" />
             <IconButton aria-label="Menu button" onClick={toggleDrawer(true)}>
@@ -126,7 +150,6 @@ export default function AppAppBar() {
                     <CloseRoundedIcon />
                   </IconButton>
                 </Box>
-
                 <MenuItem>Features</MenuItem>
                 <MenuItem>Testimonials</MenuItem>
                 <MenuItem>Highlights</MenuItem>
@@ -134,18 +157,28 @@ export default function AppAppBar() {
                 <MenuItem>FAQ</MenuItem>
                 <MenuItem>Blog</MenuItem>
                 <Divider sx={{ my: 3 }} />
-                <MenuItem>
-        
-                  <Button onClick={handleSignupClick} color="primary" variant="contained" fullWidth>
-                    Sign up
-                  </Button>
-                
-                </MenuItem>
-                <MenuItem>
-                  <Button  onClick={handleSigninClick} color="primary" variant="outlined" fullWidth>
-                    Sign in
-                  </Button>
-                </MenuItem>
+                {isAuthenticated ? (
+                  <>
+                    <MenuItem>
+                      <Button onClick={handleLogout} color="primary" variant="outlined" fullWidth>
+                        Logout
+                      </Button>
+                    </MenuItem>
+                  </>
+                ) : (
+                  <>
+                    <MenuItem>
+                      <Button onClick={handleSignupClick} color="primary" variant="contained" fullWidth>
+                        Sign up
+                      </Button>
+                    </MenuItem>
+                    <MenuItem>
+                      <Button onClick={handleSigninClick} color="primary" variant="outlined" fullWidth>
+                        Sign in
+                      </Button>
+                    </MenuItem>
+                  </>
+                )}
               </Box>
             </Drawer>
           </Box>

@@ -1,117 +1,243 @@
-// src/ChatComponent.js
 import * as React from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
 import CssBaseline from '@mui/material/CssBaseline';
+import Divider from '@mui/material/Divider';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormLabel from '@mui/material/FormLabel';
+import FormControl from '@mui/material/FormControl';
+import Link from '@mui/material/Link';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import MuiCard from '@mui/material/Card';
 import { styled } from '@mui/material/styles';
-import { HfInference } from '@huggingface/inference';
-
-const client = new HfInference('hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'); // Replace with your API key
-
+import AppTheme from '../shared-theme/AppTheme';
+import { GoogleIcon, FacebookIcon, SitemarkIcon } from './CustomIcons';
+import ColorModeSelect from '../shared-theme/ColorModeSelect';
+import Logo from '../components/Logo';
+import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import axios from 'axios'
 const Card = styled(MuiCard)(({ theme }) => ({
-    display: 'flex',
-    flexDirection: 'column',
-    alignSelf: 'center',
-    width: '100%',
-    padding: theme.spacing(4),
-    gap: theme.spacing(2),
-    margin: 'auto',
-    boxShadow: 'hsla(220, 30%, 5%, 0.05) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.05) 0px 15px 35px -5px',
-    [theme.breakpoints.up('sm')]: {
-        width: '450px',
-    },
-    ...theme.applyStyles('dark', {
-        boxShadow: 'hsla(220, 30%, 5%, 0.5) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.08) 0px 15px 35px -5px',
-    }),
+  display: 'flex',
+  flexDirection: 'column',
+  alignSelf: 'center',
+  width: '100%',
+  padding: theme.spacing(4),
+  gap: theme.spacing(2),
+  margin: 'auto',
+  boxShadow:
+    'hsla(220, 30%, 5%, 0.05) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.05) 0px 15px 35px -5px',
+  [theme.breakpoints.up('sm')]: {
+    width: '450px',
+  },
+  ...theme.applyStyles('dark', {
+    boxShadow:
+      'hsla(220, 30%, 5%, 0.5) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.08) 0px 15px 35px -5px',
+  }),
 }));
 
-const ChatComponent = () => {
-    const [input, setInput] = React.useState('');
-    const [output, setOutput] = React.useState('');
-    const [loading, setLoading] = React.useState(false);
-    const [error, setError] = React.useState(false);
+const SignUpContainer = styled(Stack)(({ theme }) => ({
+  height: 'calc((1 - var(--template-frame-height, 0)) * 100dvh)',
+  minHeight: '100%',
+  padding: theme.spacing(2),
+  [theme.breakpoints.up('sm')]: {
+    padding: theme.spacing(4),
+  },
+  '&::before': {
+    content: '""',
+    display: 'block',
+    position: 'absolute',
+    zIndex: -1,
+    inset: 0,
+    backgroundImage:
+      'radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))',
+    backgroundRepeat: 'no-repeat',
+    ...theme.applyStyles('dark', {
+      backgroundImage:
+        'radial-gradient(at 50% 50%, hsla(210, 100%, 16%, 0.5), hsl(220, 30%, 5%))',
+    }),
+  },
+}));
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-        if (!input) return;
+export default function SignUp(props) {
+  const [emailError, setEmailError] = React.useState(false);
+  const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
+  const [passwordError, setPasswordError] = React.useState(false);
+  const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
+  const [nameError, setNameError] = React.useState(false);
+  const [nameErrorMessage, setNameErrorMessage] = React.useState('');
 
-        setOutput('');
-        setLoading(true);
+  const validateInputs = () => {
+    const email = document.getElementById('email');
+    const password = document.getElementById('password');
+    const name = document.getElementById('name');
 
-        try {
-            const stream = client.chatCompletionStream({
-                model: 'Qwen/Qwen2.5-72B-Instruct',
-                messages: [{ role: 'user', content: input }],
-                max_tokens: 500,
-            });
+    let isValid = true;
 
-            let out = '';
+    if (!email.value || !/\S+@\S+\.\S+/.test(email.value)) {
+      setEmailError(true);
+      setEmailErrorMessage('Please enter a valid email address.');
+      isValid = false;
+    } else {
+      setEmailError(false);
+      setEmailErrorMessage('');
+    }
 
-            for await (const chunk of stream) {
-                if (chunk.choices && chunk.choices.length > 0) {
-                    const newContent = chunk.choices[0].delta.content;
-                    out += newContent;
-                    setOutput((prev) => prev + newContent); // Update output incrementally
-                }
-            }
-            setLoading(false);
-            setInput(''); // Clear input after submission
-        } catch (error) {
-            console.error(error);
-            setError(true);
-            setLoading(false);
+    if (!password.value || password.value.length < 6) {
+      setPasswordError(true);
+      setPasswordErrorMessage('Password must be at least 6 characters long.');
+      isValid = false;
+    } else {
+      setPasswordError(false);
+      setPasswordErrorMessage('');
+    }
+
+    if (!name.value || name.value.length < 1) {
+      setNameError(true);
+      setNameErrorMessage('Name is required.');
+      isValid = false;
+    } else {
+      setNameError(false);
+      setNameErrorMessage('');
+    }
+    return isValid;
+  };
+  const handleSubmit = (event) => {
+    if (nameError || emailError || passwordError) {
+      event.preventDefault();
+      return;
+    }
+    const data = new FormData(event.currentTarget);
+    console.log({
+      name: data.get('name'),
+      lastName: data.get('lastName'),
+      email: data.get('email'),
+      password: data.get('password'),
+    });
+  };
+
+  const navigate = useNavigate();
+  
+  const handleSigninClick = () => {
+    navigate('/login');
+  };
+  const [username , setUsername] = useState('')
+  const [email , setEmail] = useState('')
+  const [password , setPassword] = useState('')
+  const [error, setError] = useState(false)
+
+  async function HandleSignup(event){
+    event.preventDefault();
+      try {
+        const response = await axios.post("http://localhost:3000/user/signup", {
+          username,
+          email,
+          password
+        })
+        console.log(response.data)
+        if(response.data){
+          console.log("successfull")
+          navigate("/")
+          setError(false)
         }
-    };
-
-    return (
-        <Box sx={{ padding: '20px', backgroundColor: '#f0f0f0', minHeight: '100vh' }}>
-            <CssBaseline />
-            <Card variant="outlined">
-                <Typography component="h1" variant="h4" sx={{ textAlign: 'center' }}>
-                    Chat with AI
-                </Typography>
-                <Stack component="form" onSubmit={handleSubmit} spacing={2}>
-                    <TextField
-                        required
-                        fullWidth
-                        id="message"
-                        label="Type your message"
-                        variant="outlined"
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        disabled={loading}
-                        sx={{
-                            '& .MuiOutlinedInput-root': {
-                                '& fieldset': {
-                                    borderColor: 'primary.main',
-                                },
-                                '&:hover fieldset': {
-                                    borderColor: 'primary.dark',
-                                },
-                                '&.Mui-focused fieldset': {
-                                    borderColor: 'primary.main',
-                                },
-                            },
-                        }}
-                    />
-                    <Button type="submit" variant="contained" fullWidth disabled={loading}>
-                        {loading ? 'Loading...' : 'Send'}
-                    </Button>
-                </Stack>
-                {output && (
-                    <Box sx={{ marginTop: '20px', padding: '10px', backgroundColor: '#e3f2fd', borderRadius: '5px' }}>
-                        <Typography variant="h6">Response:</Typography>
-                        <Typography>{output}</Typography>
-                    </Box>
-                )}
-                {error && <Typography sx={{ color: 'red', textAlign: 'center' }}>Error: Unable to get response.</Typography>}
-            </Card>
-        </Box>
-    );
-};
-
-export default ChatComponent;
+      } catch (error) {
+          setError(true)
+      }
+  }
+  return (
+    <AppTheme {...props}>
+      <CssBaseline enableColorScheme />
+      <ColorModeSelect sx={{ position: 'fixed', top: '1rem', right: '1rem' }} />
+      <SignUpContainer direction="column" justifyContent="space-between">
+        <Card variant="outlined">
+          <Logo />
+          <Typography
+            component="h1"
+            variant="h4"
+            sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}
+          >
+            Sign up
+          </Typography>
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+          >
+            <FormControl>
+              <FormLabel htmlFor="name">Full name</FormLabel>
+              <TextField
+                autoComplete="name"
+                name="name"
+                required
+                fullWidth
+                id="name"
+                placeholder="Jon Snow"
+                error={nameError}
+                helperText={nameErrorMessage}
+                color={nameError ? 'error' : 'primary'}
+                onChange={(e)=>{setUsername(e.target.value)}}
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel htmlFor="email">Email</FormLabel>
+              <TextField
+                required
+                fullWidth
+                id="email"
+                placeholder="your@email.com"
+                name="email"
+                autoComplete="email"
+                variant="outlined"
+                error={emailError}
+                helperText={emailErrorMessage}
+                color={passwordError ? 'error' : 'primary'}
+                onChange={(e)=>{setEmail(e.target.value)}}
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel htmlFor="password">Password</FormLabel>
+              <TextField
+                required
+                fullWidth
+                name="password"
+                placeholder="••••••"
+                type="password"
+                id="password"
+                autoComplete="new-password"
+                variant="outlined"
+                error={passwordError}
+                helperText={passwordErrorMessage}
+                color={passwordError ? 'error' : 'primary'}
+                onChange={(e)=>{setPassword(e.target.value)}}
+              />
+            </FormControl>
+            <FormControlLabel
+              control={<Checkbox value="allowExtraEmails" color="primary" />}
+              label="I want to receive updates via email."
+            />
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              onClick={HandleSignup}
+            >
+              Sign up
+            </Button>
+            <Typography sx={{ textAlign: 'center' }}>
+              Already have an account?{' '}
+              <span>
+                <Button onClick={handleSigninClick}>
+                  Sign in
+                </Button>
+              </span>
+            </Typography>
+          </Box>
+        </Card>
+      </SignUpContainer>
+      {error?<p style={{color:"red"}}>Error in signup</p>:<p style={{color:"green"}}>Signup successfull</p>}
+    </AppTheme>
+  );
+}

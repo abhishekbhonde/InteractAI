@@ -225,7 +225,7 @@ export default function SignIn(props) {
               type="submit"
               fullWidth
               variant="contained"
-              onSubmit={handleSignin}
+              onClick={handleSignin}
             >
               Sign in
             </Button>

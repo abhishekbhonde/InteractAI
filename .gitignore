@@ -6,3 +6,4 @@
 
 # Optional: Ignore environment files anywhere
 **/.env
+**/dist
