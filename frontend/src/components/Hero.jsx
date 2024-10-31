@@ -10,7 +10,7 @@ import Typography from '@mui/material/Typography';
 
 import { visuallyHidden } from '@mui/utils';
 import { styled } from '@mui/material/styles';
-
+import { useNavigate } from 'react-router-dom';
 const StyledBox = styled('div')(({ theme }) => ({
   alignSelf: 'center',
   width: '100%',
@@ -36,7 +36,12 @@ const StyledBox = styled('div')(({ theme }) => ({
   }),
 }));
 
+
 export default function Hero() {
+  const navigate = useNavigate();
+const HandleChat = () =>{
+    navigate("/chatwithai")
+}
   return (
     <Box
       id="hero"
@@ -127,6 +132,7 @@ export default function Hero() {
               color="primary"
               size="small"
               sx={{ minWidth: 'fit-content' }}
+              onClick={HandleChat}
             >
               Start now
             </Button>

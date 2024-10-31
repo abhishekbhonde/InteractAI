@@ -11,6 +11,7 @@ import Testimonials from './components/Testimonials';
 import FAQ from './components/FAQ';
 import Footer from './components/Footer';
 import AppTheme from '../src/shared-theme/AppTheme';
+import ChatComponent from './components/ChatWithAI';
 
 export default function MarketingPage(props) {
   return (
@@ -27,6 +28,7 @@ export default function MarketingPage(props) {
         <Highlights />
         <Divider />
         {/* <Pricing /> */}
+        {/* <ChatComponent/> */}
         <Divider />
         <FAQ />
         <Divider />
