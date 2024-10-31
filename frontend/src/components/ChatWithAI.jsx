@@ -7,9 +7,10 @@ import Stack from '@mui/material/Stack';
 import MuiCard from '@mui/material/Card';
 import { styled } from '@mui/material/styles';
 import { HfInference } from '@huggingface/inference';
-
+// import { useHistory } from 'react-router-dom'; // Import useHistory
+import { useNavigate } from 'react-router-dom';
 // Initialize Hugging Face API client
-const client = new HfInference('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'); // Replace with your API key
+const client = new HfInference('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'); // Use env variable
 
 // Styled card for the chat window
 const StyledCard = styled(MuiCard)(({ theme }) => ({
@@ -20,8 +21,8 @@ const StyledCard = styled(MuiCard)(({ theme }) => ({
     boxShadow: theme.shadows[5],
     backgroundColor: theme.palette.background.default,
     marginTop: theme.spacing(4),
-    width: '600px', // Width for the chat window
-    height: '80vh', // Height for the chat window
+    width: '600px',
+    height: '80vh',
     overflow: 'hidden',
 }));
 
@@ -29,20 +30,25 @@ const StyledCard = styled(MuiCard)(({ theme }) => ({
 const ResponseBox = styled(Box)(({ theme }) => ({
     marginTop: theme.spacing(2),
     padding: theme.spacing(2),
-    backgroundColor: '#000000', // Black background
+    backgroundColor: '#000000',
     borderRadius: '10px',
-    color: theme.palette.common.white, // White text color
-    whiteSpace: 'pre-wrap', // Preserve whitespace and line breaks
-    overflowY: 'auto', // Enable scrolling if content overflows
-    maxHeight: '400px', // Increased height for the response box
+    color: theme.palette.common.white,
+    whiteSpace: 'pre-wrap',
+    overflowY: 'auto',
+    maxHeight: '400px',
     boxShadow: theme.shadows[2],
 }));
 
 const ChatComponent = () => {
+    const navigate = useNavigate();
+    const HandleSubmit = ()=>{
+        navigate("/")
+    }
     const [input, setInput] = React.useState('');
     const [output, setOutput] = React.useState('');
     const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState(false);
+    // const history = useHistory(); // Initialize useHistory
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -64,11 +70,11 @@ const ChatComponent = () => {
                 if (chunk.choices && chunk.choices.length > 0) {
                     const newContent = chunk.choices[0].delta.content;
                     out += newContent;
-                    setOutput((prev) => prev + newContent); // Update output incrementally
+                    setOutput((prev) => prev + newContent);
                 }
             }
             setLoading(false);
-            setInput(''); // Clear input after submission
+            setInput('');
         } catch (error) {
             console.error(error);
             setError(true);
@@ -83,9 +89,9 @@ const ChatComponent = () => {
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
-                padding: '40px', // More padding around the component
-                background: 'linear-gradient(135deg, #001f3f, #003366)', // Dark blue gradient
-                height: '100vh', // Full height for the component
+                padding: '40px',
+                background: 'linear-gradient(135deg, #001f3f, #003366)',
+                height: '100vh',
             }}
         >
             <StyledCard variant="outlined">
@@ -116,7 +122,7 @@ const ChatComponent = () => {
                                     borderRadius: '10px',
                                 },
                                 '& input': {
-                                    color: '#ffffff', // Change input text color
+                                    color: '#ffffff',
                                 },
                             },
                         }}
@@ -125,7 +131,8 @@ const ChatComponent = () => {
                         {loading ? 'Loading...' : 'Send'}
                     </Button>
                 </Stack>
-                {/* Place ResponseBox directly below the button */}
+
+                {/* Response Box */}
                 <ResponseBox>
                     {output && (
                         <>
@@ -135,6 +142,17 @@ const ChatComponent = () => {
                     )}
                 </ResponseBox>
                 {error && <Typography sx={{ color: 'error.main', textAlign: 'center' }}>Error: Unable to get response.</Typography>}
+
+                {/* Back to Home Button */}
+                <Button 
+                    variant="outlined" 
+                    color="secondary" 
+                    fullWidth 
+                    onClick={HandleSubmit} // Navigate to home
+                    sx={{ marginTop: '16px' }} // Add some margin
+                >
+                    Back to Home
+                </Button>
             </StyledCard>
         </Box>
     );
