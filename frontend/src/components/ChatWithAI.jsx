@@ -145,15 +145,30 @@ const ChatComponent = () => {
 
                 {/* Back to Home Button */}
                 <Button 
-                    variant="outlined" 
-                    color="secondary" 
-                    fullWidth 
-                    onClick={HandleSubmit} // Navigate to home
-                    sx={{ marginTop: '16px' }} // Add some margin
-                >
-                    Back to Home
-                    
-                </Button>
+    variant="contained" 
+    color="primary" 
+    fullWidth 
+    onClick={HandleSubmit} // Navigate to home
+    sx={{
+        marginTop: '16px',
+        padding: '10px 0',
+        borderRadius: '8px',
+        fontWeight: 'bold',
+        fontSize: '16px',
+        color: '#ffffff',
+        backgroundColor: '#1976d2', // Matches the Send button's primary color
+        boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.2)',
+        '&:hover': {
+            backgroundColor: '#1565c0', // Darker shade for hover effect, consistent with MUI theme
+            boxShadow: '0px 6px 12px rgba(0, 0, 0, 0.3)',
+        },
+    }}
+>
+    Back to Home
+</Button>
+
+
+
             </StyledCard>
         </Box>
     );
