@@ -152,6 +152,7 @@ const ChatComponent = () => {
                     sx={{ marginTop: '16px' }} // Add some margin
                 >
                     Back to Home
+                    
                 </Button>
             </StyledCard>
         </Box>
